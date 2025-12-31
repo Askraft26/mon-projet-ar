@@ -33,13 +33,13 @@
 
       <!-- Marker Hiro -->
       <a-marker preset="hiro">
-        <!-- Vidéo affichée sur le marker (ratio 16:9) -->
-        <a-video id="videoPlane" src="#vid" width="4" height="2.25" position="0 0 0"></a-video>
+        <!-- Vidéo affichée sur le marker -->
+        <a-video src="#vid" width="4" height="2" position="0 0 0"></a-video>
 
-        <!-- Feux d’artifice animés (cachés au départ) -->
-        <a-image id="fw1" src="#firework1" shader="gif" position="-1 1 0" width="1.5" height="1.5" visible="false"></a-image>
-        <a-image id="fw2" src="#firework2" shader="gif" position="1 1 0" width="1.5" height="1.5" visible="false"></a-image>
-        <a-image id="fw3" src="#firework3" shader="gif" position="0 2 0" width="2" height="2" visible="false"></a-image>
+        <!-- Feux d’artifice animés -->
+        <a-image src="#firework1" shader="gif" position="-1 1 0" width="1.5" height="1.5"></a-image>
+        <a-image src="#firework2" shader="gif" position="1 1 0" width="1.5" height="1.5"></a-image>
+        <a-image src="#firework3" shader="gif" position="0 2 0" width="2" height="2"></a-image>
       </a-marker>
 
       <!-- Caméra AR -->
@@ -47,20 +47,9 @@
     </a-scene>
 
     <script>
-      const video = document.getElementById('vid');
-      const fw1 = document.getElementById('fw1');
-      const fw2 = document.getElementById('fw2');
-      const fw3 = document.getElementById('fw3');
-
-      // Quand la vidéo démarre, on affiche les GIFs
-      video.addEventListener('play', () => {
-        fw1.setAttribute('visible', true);
-        fw2.setAttribute('visible', true);
-        fw3.setAttribute('visible', true);
-      });
-
-      // Bouton pour activer le son
+      // Activation du son au clic
       document.getElementById('unmuteBtn').addEventListener('click', () => {
+        const video = document.getElementById('vid');
         video.muted = false;
         video.play();
       });
