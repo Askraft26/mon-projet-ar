@@ -1,27 +1,84 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Adaptation mobile -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
+    <style>
+      /* Style des boutons pour mobile */
+      .controls {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 999;
+      }
+      button {
+        padding: 12px 18px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: none;
+        background: #333;
+        color: white;
+      }
+    </style>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <!-- Boutons de contrôle -->
-    <button onclick="document.querySelector('#vid').play()">▶️ Play</button>
-    <button onclick="document.querySelector('#vid').pause()">⏸ Pause</button>
+    <!-- Boutons de contrôle adaptés mobile -->
+    <div class="controls">
+      <button onclick="document.querySelector('#vid').play()">▶️</button>
+      <button onclick="document.querySelector('#vid').pause()">⏸</button>
+      <button onclick="resizeVideo(1.2)">➕</button>
+      <button onclick="resizeVideo(0.8)">➖</button>
+    </div>
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       <a-assets>
         <video id="vid" src="video.mp4" loop="true" crossorigin="anonymous" playsinline></video>
-        <img id="firework" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3bmZ3bmZ3/l41lTjJ9fXzS8yS0M/giphy.gif">
       </a-assets>
 
       <a-marker preset="hiro">
-        <a-video src="#vid" width="2" height="1.2" position="0 0 0" rotation="-90 0 0"></a-video>
+        <a-video id="videoPlane" src="#vid" width="2" height="1.2" position="0 0 0" rotation="-90 0 0"></a-video>
       </a-marker>
 
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      function resizeVideo(scale) {
+        const videoPlane = document.querySelector("#videoPlane");
+        let currentWidth = parseFloat(videoPlane.getAttribute("width"));
+        let currentHeight = parseFloat(videoPlane.getAttribute("height"));
+
+        videoPlane.setAttribute("width", currentWidth * scale);
+        videoPlane.setAttribute("height", currentHeight * scale);
+      }
+
+      // 📱 Bonus : pinch-to-zoom sur mobile
+      let initialDistance = null;
+      document.addEventListener("touchmove", function (event) {
+        if (event.touches.length === 2) {
+          const dx = event.touches[0].clientX - event.touches[1].clientX;
+          const dy = event.touches[0].clientY - event.touches[1].clientY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (!initialDistance) {
+            initialDistance = distance;
+          } else {
+            const scale = distance / initialDistance;
+            resizeVideo(scale);
+            initialDistance = distance;
+          }
+        }
+      });
+
+      document.addEventListener("touchend", function () {
+        initialDistance = null;
+      });
+    </script>
   </body>
 </html>
