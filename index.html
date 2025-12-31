@@ -1,30 +1,75 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <title>Mon AR YouTube</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  </head>
-  <body style="margin: 0; overflow: hidden;">
     
+    <style>
+      /* Style pour l'écran d'accueil "Toucher pour démarrer" */
+      #start-screen {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-family: sans-serif;
+        font-size: 24px;
+        cursor: pointer;
+      }
+    </style>
+
+    <script>
+      // Composant pour gérer le clic sur le bouton "S'abonner"
+      AFRAME.registerComponent('youtube-link', {
+        init: function () {
+          this.el.addEventListener('click', function (evt) {
+            // REMPLACEZ LE LIEN CI-DESSOUS PAR VOTRE CHAÎNE YOUTUBE
+            window.location.href = 'http://www.youtube.com/@yoizykraft'; 
+          });
+        }
+      });
+    </script>
+  </head>
+
+  <body style="margin : 0px; overflow: hidden;">
+    
+    <div id="start-screen">
+      <div>👆 Touchez l'écran pour démarrer</div>
+    </div>
+
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       
       <a-assets>
-        <video id="maVideo" src="WhatsApp Video 2025-12-30 at 01.21.40.mp4" preload="auto" loop="true" crossorigin="anonymous" playsinline></video>
+        <video id="vid" src="video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
       <a-marker preset="hiro">
-        <a-video src="#maVideo" width="1.6" height="0.9" position="0 0 0" rotation="-90 0 0"></a-video>
+        
+        <a-video src="#vid" width="1.8" height="1" position="0 0 0" rotation="-90 0 0"></a-video>
+
+        <a-entity position="0 0 1" rotation="-90 0 0" youtube-link>
+          <a-plane color="#FF0000" width="1" height="0.3"></a-plane>
+          <a-text value="S'ABONNER" align="center" width="4" position="0 0 0.01"></a-text>
+        </a-entity>
+
       </a-marker>
 
-      <a-entity camera></a-entity>
+      <a-entity camera cursor="rayOrigin: mouse" raycaster="objects: [youtube-link]"></a-entity>
+      
     </a-scene>
 
     <script>
-      document.body.addEventListener('click', function () {
-        var v = document.querySelector('#maVideo');
-        v.play();
+      // Logique pour lancer la vidéo quand on touche l'écran d'accueil
+      document.getElementById('start-screen').addEventListener('click', function() {
+        const video = document.getElementById('vid');
+        video.play(); // On lance la vidéo
+        video.muted = false; // On active le son
+        this.style.display = 'none'; // On cache l'écran noir
       });
     </script>
   </body>
-
 </html>
