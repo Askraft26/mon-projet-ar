@@ -2,7 +2,9 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <!-- AR.js pour la réalité augmentée -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <!-- Shader pour GIF animés -->
     <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
@@ -16,18 +18,18 @@
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       <a-assets>
-        <!-- autoplay + muted pour démarrer automatiquement -->
-        <video id="vid" src="WhatsApp Video 2025-12-31 at 22.42.38.mp4" autoplay loop muted playsinline crossorigin="anonymous"></video>
+        <!-- Vidéo principale (renommée sans espaces pour éviter les erreurs) -->
+        <video id="vid" src="whatsapp-video.mp4" autoplay loop muted playsinline crossorigin="anonymous"></video>
 
         <!-- GIFs de feux d’artifice -->
-        <img id="firework1" src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif">
-        <img id="firework2" src="https://media.giphy.com/media/l41lTjJ9fXzS8yS0M/giphy.gif">
-        <img id="firework3" src="https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif">
+        <img id="firework1" src="firework-7791_256.gif">
+        <img id="firework2" src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif">
+        <img id="firework3" src="https://media.giphy.com/media/l41lTjJ9fXzS8yS0M/giphy.gif">
       </a-assets>
 
       <a-marker preset="hiro">
-        <!-- Vidéo principale -->
-        <a-video id="videoPlane" src="firework-7791_256.gif" width="2" height="1.2" position="0 0 0" rotation="-90 0 0"></a-video>
+        <!-- Vidéo affichée sur le marker -->
+        <a-video id="videoPlane" src="#vid" width="2" height="1.2" position="0 0 0" rotation="-90 0 0"></a-video>
 
         <!-- Feux d’artifice autour -->
         <a-entity geometry="primitive: plane; width: 1.5; height: 1.5"
@@ -62,5 +64,3 @@
     </script>
   </body>
 </html>
-
-
