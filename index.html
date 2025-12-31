@@ -1,74 +1,134 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Mon AR YouTube</title>
+    <title>AR Experience - YoizyKraft</title>
+    <meta charset="utf-8">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
-      /* Style pour l'écran d'accueil "Toucher pour démarrer" */
       #start-screen {
-        position: absolute;
+        position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.8);
+        background: radial-gradient(circle, #2c3e50, #000000);
         z-index: 9999;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         color: white;
-        font-family: sans-serif;
-        font-size: 24px;
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
         cursor: pointer;
+      }
+      .play-btn {
+        font-size: 50px;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
       }
     </style>
 
     <script>
-      // Composant pour gérer le clic sur le bouton "S'abonner"
+      // Gestion du lien YouTube
       AFRAME.registerComponent('youtube-link', {
         init: function () {
-          this.el.addEventListener('click', function (evt) {
-            // REMPLACEZ LE LIEN CI-DESSOUS PAR VOTRE CHAÎNE YOUTUBE
-            window.location.href = 'http://www.youtube.com/@yoizykraft'; 
+          this.el.addEventListener('click', () => {
+            window.open('https://www.youtube.com/@yoizykraft', '_blank');
+          });
+        }
+      });
+
+      // Gestion de la lecture/pause automatique selon la visibilité du marqueur
+      AFRAME.registerComponent('marker-handler', {
+        init: function () {
+          const marker = this.el;
+          const video = document.querySelector('#vid');
+
+          marker.addEventListener('markerFound', () => {
+            video.play();
+          });
+
+          marker.addEventListener('markerLost', () => {
+            video.pause();
           });
         }
       });
     </script>
   </head>
 
-  <body style="margin : 0px; overflow: hidden;">
+  <body style="margin: 0; overflow: hidden;">
     
     <div id="start-screen">
-      <div>👆 Touchez l'écran pour démarrer</div>
+      <div class="play-btn">▶</div>
+      <div><strong>CLIQUEZ POUR LANCER L'EXPÉRIENCE</strong><br><small>Autorisez l'accès à la caméra</small></div>
     </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+    <a-scene 
+      embedded 
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+      renderer="antialias: true; colorManagement: true; sortObjects: true;">
       
       <a-assets>
-        <video id="vid" src="video.mp4" loop="true" crossorigin="anonymous" playsinline webkit-playsinline></video>
+        <video id="vid" 
+               src="video.mp4" 
+               preload="auto" 
+               loop="true" 
+               crossorigin="anonymous" 
+               playsinline 
+               webkit-playsinline>
+        </video>
       </a-assets>
 
-      <a-marker preset="hiro">
+      <a-marker preset="hiro" marker-handler>
         
-        <a-video src="#vid" width="1.8" height="1" position="0 0 0" rotation="-90 0 0"></a-video>
+        <a-video 
+          src="#vid" 
+          width="1.8" 
+          height="1" 
+          position="0 0.1 0" 
+          rotation="-90 0 0"
+          shadow="receive: true">
+        </a-video>
 
-        <a-entity position="0 0 1" rotation="-90 0 0" youtube-link>
-          <a-plane color="#FF0000" width="1" height="0.3"></a-plane>
-          <a-text value="S'ABONNER" align="center" width="4" position="0 0 0.01"></a-text>
+        <a-entity position="0 0.1 0.8" rotation="-90 0 0" youtube-link class="raycastable">
+          <a-gui-flex-container width="1" height="0.3" panel-color="#FF0000">
+             <a-plane color="#FF0000" width="1.2" height="0.35" radius="0.1"></a-plane>
+          </a-gui-flex-container>
+          
+          <a-text 
+            value="S'ABONNER" 
+            align="center" 
+            width="3.5" 
+            font="https://cdn.aframe.io/fonts/DejaVu-sans-mono.json"
+            position="0 0 0.02">
+          </a-text>
+
+          <a-animation attribute="scale" from="1 1 1" to="1.05 1.05 1.05" dur="1000" repeat="indefinite" direction="alternate"></a-animation>
         </a-entity>
 
       </a-marker>
 
-      <a-entity camera cursor="rayOrigin: mouse" raycaster="objects: [youtube-link]"></a-entity>
+      <a-entity camera>
+        <a-cursor 
+          fuse="false" 
+          raycaster="objects: .raycastable">
+        </a-cursor>
+      </a-entity>
       
     </a-scene>
 
     <script>
-      // Logique pour lancer la vidéo quand on touche l'écran d'accueil
+      // Démarrage global
       document.getElementById('start-screen').addEventListener('click', function() {
         const video = document.getElementById('vid');
-        video.play(); // On lance la vidéo
-        video.muted = false; // On active le son
-        this.style.display = 'none'; // On cache l'écran noir
+        video.play();
+        video.pause(); // Pré-chargement pour iOS
+        this.style.display = 'none';
       });
     </script>
   </body>
