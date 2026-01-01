@@ -1,27 +1,80 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidéo AR fixe</title>
+    <meta charset="utf-8">
+    <title>AR.js Video with Play Button</title>
 
-    <!-- A-Frame -->
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-
-    <!-- AR.js -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
 
-  <body style="margin:0; overflow:hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+  <body style="margin: 0; overflow: hidden;">
+
+    <a-scene
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      renderer="logarithmicDepthBuffer: true;"
+      vr-mode-ui="enabled: false"
+    >
+
       <a-assets>
-        <video id="vid" src="WhatsApp Video 2025-12-31 at 22.42.38.mp4"
-               autoplay loop muted playsinline crossorigin="anonymous"></video>
+        <!-- Vidéo -->
+        <video
+          id="maVideo"
+          src="W.mp4"
+          preload="auto"
+          loop
+          muted
+          playsinline
+          crossorigin="anonymous">
+        </video>
+
+        <!-- Image bouton Play -->
+        <img id="playBtn" src="play.png">
       </a-assets>
 
-      <!-- Vidéo affichée uniquement sur le marqueur Hiro -->
-      <a-marker preset="hiro">
-        <a-video src="#vid" width="4" height="2" position="0 0 0"></a-video>
+      <a-marker preset="hiro" emitevents="true">
+
+        <!-- Vidéo -->
+        <a-video
+          id="videoAR"
+          src="#maVideo"
+          width="1.4"
+          height="0.8"
+          position="0 0.01 0">
+        </a-video>
+
+        <!-- Bouton Play -->
+        <a-image
+          id="btnPlay"
+          src="#playBtn"
+          width="0.3"
+          height="0.3"
+          position="0 0.02 0.01"
+          class="clickable">
+        </a-image>
+
       </a-marker>
+
+      <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      const video = document.querySelector('#maVideo');
+      const btnPlay = document.querySelector('#btnPlay');
+      const marker = document.querySelector('a-marker');
+
+      // Click sur le bouton AR
+      btnPlay.addEventListener('click', () => {
+        video.play();
+        btnPlay.setAttribute('visible', false);
+      });
+
+      // Quand le marqueur disparaît
+      marker.addEventListener('markerLost', () => {
+        video.pause();
+        btnPlay.setAttribute('visible', true);
+      });
+    </script>
+
   </body>
 </html>
