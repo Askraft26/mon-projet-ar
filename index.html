@@ -2,12 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>AR.js - Vidéo alignée sur marqueur HIRO</title>
+  <title>AR.js – Vidéo au-dessus du marqueur</title>
 
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-
-  <!-- AR.js -->
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
   <style>
@@ -48,28 +45,31 @@
   <!-- Marqueur HIRO -->
   <a-marker
     preset="hiro"
-    smooth="true"
-    smoothCount="5"
-    smoothTolerance="0.01"
-    emitevents="true">
+    emitevents="true"
 
-    <!-- Vidéo posée à plat -->
+    <!-- Tracking très réactif -->
+    smooth="true"
+    smoothCount="2"
+    smoothTolerance="0.005"
+    smoothThreshold="2">
+
+    <!-- Vidéo à 4 cm au-dessus du marqueur -->
     <a-video
       id="videoAR"
       src="#video"
       width="1.4"
       height="0.8"
-      position="0 0.01 0"
+      position="0 0.04 0"
       rotation="-90 0 0">
     </a-video>
 
-    <!-- Bouton Play -->
+    <!-- Bouton Play légèrement au-dessus de la vidéo -->
     <a-image
       id="playBtn"
       src="#play"
       width="0.3"
       height="0.3"
-      position="0 0.02 0.01"
+      position="0 0.045 0.01"
       rotation="-90 0 0"
       class="clickable">
     </a-image>
@@ -86,7 +86,7 @@
   const playBtn = document.querySelector('#playBtn');
   const marker = document.querySelector('a-marker');
 
-  // Lecture vidéo au clic
+  // Lecture vidéo
   playBtn.addEventListener('click', () => {
     video.play();
     playBtn.setAttribute('visible', 'false');
@@ -98,7 +98,7 @@
     playBtn.setAttribute('visible', 'true');
   });
 
-  // (Optionnel) Stop quand on quitte la page
+  // Sécurité mobile
   window.addEventListener('blur', () => {
     video.pause();
     playBtn.setAttribute('visible', 'true');
