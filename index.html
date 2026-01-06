@@ -2,10 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>AR.js – Vidéo avec son, pause et image festive</title>
+  <title>AR.js – V.mp4 classique + V2.mp4 fond noir transparent</title>
 
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <!-- Shader chroma key pour rendre le noir transparent sur V2.mp4 -->
+  <script src="https://cdn.jsdelivr.net/gh/oscarmarinmiro/aframe-chroma-key-shader/dist/aframe-chroma-key-shader.min.js"></script>
 
   <style>
     body { margin: 0; overflow: hidden; }
@@ -30,21 +32,31 @@
 
 <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
   <a-assets>
-    <!-- Vidéo -->
+    <!-- Vidéo 1 : V.mp4 (classique, sans transparence) -->
     <video id="video" loop playsinline webkit-playsinline crossorigin="anonymous">
       <source src="V.mp4" type="video/mp4">
-      <source src="fireworks.webm" type="video/webm">
     </video>
 
-    <!-- Image festive "Happy New Year 2026" -->
-    <img id="newyear" src="happy2026.webp"> <!-- adapte le nom si nécessaire -->
+    <!-- Vidéo 2 : V2.mp4 (fond noir à rendre transparent) -->
+    <video id="video2" loop playsinline webkit-playsinline crossorigin="anonymous">
+      <source src="Feux d’artifice.mp4" type="video/mp4">
+    </video>
+
+    <!-- Image festive au-dessus -->
+    <img id="newyear" src="happy2026.webp">
   </a-assets>
 
   <a-marker preset="hiro" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="5">
-    <!-- Vidéo -->
+    <!-- Plan vidéo principal: V.mp4 -->
     <a-video src="#video" width="1" height="1" position="0 0 0" rotation="-90 0 0"></a-video>
 
-    <!-- Image positionnée juste au-dessus de la vidéo -->
+    <!-- Plan vidéo secondaire: V2.mp4 avec chroma key (noir transparent)
+         Léger décalage en hauteur pour éviter le z-fighting et overlay propre -->
+    <a-video src="#video2" width="1" height="1" position="0 0.002 0" rotation="-90 0 0"
+             material="shader: chromakey; color: black">
+    </a-video>
+
+    <!-- Image "Happy New Year 2026" au-dessus -->
     <a-image src="#newyear" width="1" height="0.5" position="0 1.1 0" rotation="-90 0 0"></a-image>
   </a-marker>
 
@@ -52,38 +64,40 @@
 </a-scene>
 
 <script>
-  const video = document.querySelector('#video');
+  const video1 = document.querySelector('#video');   // V.mp4
+  const video2 = document.querySelector('#video2');  // V2.mp4 (chroma key)
   const startBtn = document.querySelector('#startBtn');
   const pauseBtn = document.querySelector('#pauseBtn');
 
-  // Bouton démarrer
+  // Démarrer: jouer les deux vidéos avec son (désactivé par défaut, activé au clic)
   startBtn.addEventListener('click', async () => {
     try {
-      video.muted = false; // activer le son
-      await video.play();
-      startBtn.style.display = 'none'; // cacher le bouton démarrer
-      pauseBtn.style.display = 'block'; // afficher le bouton pause
+      video1.muted = false;
+      video2.muted = false;
+      await Promise.all([video1.play(), video2.play()]);
+      startBtn.style.display = 'none';
+      pauseBtn.style.display = 'block';
     } catch (err) {
-      console.warn('Impossible de lancer la vidéo :', err);
+      console.warn('Impossible de lancer les vidéos :', err);
     }
   });
 
-  // Bouton pause/reprendre
+  // Pause/Reprendre: agir sur les deux vidéos en synchro
   pauseBtn.addEventListener('click', async () => {
-    if (!video.paused) {
-      video.pause();
+    const bothPlaying = !video1.paused || !video2.paused;
+    if (bothPlaying) {
+      video1.pause();
+      video2.pause();
       pauseBtn.textContent = '▶ Reprendre';
     } else {
       try {
-        await video.play();
+        await Promise.all([video1.play(), video2.play()]);
         pauseBtn.textContent = '⏸ Pause';
       } catch (err) {
-        console.warn('Impossible de reprendre la vidéo :', err);
+        console.warn('Impossible de reprendre les vidéos :', err);
       }
     }
   });
 </script>
 </body>
 </html>
-
-
