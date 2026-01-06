@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>AR.js – Vidéo au-dessus du marqueur</title>
+  <title>AR.js – Vidéo minimaliste</title>
 
+  <!-- Librairies nécessaires -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
@@ -11,200 +12,28 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-
-    /* Overlay pour démarrer la vidéo (centré, visible au-dessus de la scene AR) */
-    #startOverlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.45);
-      z-index: 9999;
-      gap: 12px;
-      flex-direction: column;
-      color: #fff;
-    }
-
-    #startOverlay.hidden {
-      display: none;
-    }
-
-    .start-btn {
-      background: #1e88e5;
-      color: white;
-      border: none;
-      padding: 14px 22px;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .start-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .small {
-      font-size: 13px;
-      opacity: 0.9;
     }
   </style>
 </head>
 
 <body>
-
-<!-- Overlay de démarrage (interaction explicite requise) -->
-<div id="startOverlay" role="dialog" aria-label="Démarrer la vidéo">
-  <button id="startBtn" class="start-btn">Appuyez pour démarrer la vidéo</button>
-  <div class="start-controls small">
-    <label>
-      <input type="checkbox" id="soundToggle">
-      Activer le son
-    </label>
-  </div>
-  <div class="small">Placez le marqueur devant la caméra pour lancer la lecture AR.</div>
-</div>
-
 <a-scene
   embedded
   arjs="sourceType: webcam; debugUIEnabled: false;"
-  renderer="logarithmicDepthBuffer: true;"
   vr-mode-ui="enabled: false">
 
-  <!-- Assets -->
+  <!-- Vidéo -->
   <a-assets>
-    <video
-      id="video"
-      src="V.mp4"
-      preload="auto"
-      loop
-      muted
-      playsinline
-      webkit-playsinline
-      crossorigin="anonymous">
-    </video>
+    <video id="video" src="V.mp4" autoplay loop muted playsinline></video>
   </a-assets>
 
   <!-- Marqueur HIRO -->
-  <a-marker
-    preset="hiro"
-    emitevents="true"
-
-    <!-- Tracking très réactif -->
-    smooth="true"
-    smoothCount="2"
-    smoothTolerance="0.005"
-    smoothThreshold="2">
-
-    <!-- Vidéo à 4 cm au-dessus du marqueur -->
-    <a-video
-      id="videoAR"
-      src="#video"
-      width="1.4"
-      height="0.8"
-      position="0 0.04 0"
-      rotation="-90 0 0">
-    </a-video>
-
+  <a-marker preset="hiro">
+    <a-video src="#video" width="1.4" height="0.8" position="0 0.04 0" rotation="-90 0 0"></a-video>
   </a-marker>
 
   <!-- Caméra -->
   <a-entity camera></a-entity>
-
 </a-scene>
-
-<script>
-  const video = document.querySelector('#video');
-  const marker = document.querySelector('a-marker');
-  const startOverlay = document.querySelector('#startOverlay');
-  const startBtn = document.querySelector('#startBtn');
-  const soundToggle = document.querySelector('#soundToggle');
-
-  // Indique si l'utilisateur a déjà fait une interaction explicite
-  let userInteracted = false;
-
-  // Fonction pour tenter de jouer la vidéo (respecte l'état du toggle son)
-  async function tryPlayVideo() {
-    // Appliquer l'état du son AVANT d'appeler play (gesture garante)
-    video.muted = !soundToggle.checked;
-    try {
-      await video.play();
-      userInteracted = true;
-      hideOverlay();
-      return true;
-    } catch (err) {
-      console.warn('Lecture refusée :', err);
-      // Laisser l'overlay visible pour redemander l'interaction
-      showOverlay();
-      return false;
-    }
-  }
-
-  function showOverlay() {
-    startOverlay.classList.remove('hidden');
-  }
-
-  function hideOverlay() {
-    startOverlay.classList.add('hidden');
-  }
-
-  // Clic sur le bouton de démarrage -> interaction explicite
-  startBtn.addEventListener('click', async () => {
-    await tryPlayVideo();
-  });
-
-  // Quand le marqueur est trouvé, lancer la lecture seulement si l'utilisateur a déjà interagi
-  marker.addEventListener('markerFound', async () => {
-    // Si l'utilisateur a déjà donné la permission (overlay caché) on tente de jouer
-    if (userInteracted) {
-      // Assurer l'état du son (au cas où l'utilisateur l'a modifié)
-      video.muted = !soundToggle.checked;
-      try {
-        await video.play();
-        hideOverlay();
-      } catch (err) {
-        console.warn('Impossible de reprendre la vidéo au markerFound :', err);
-        showOverlay();
-      }
-    } else {
-      // Si pas d'interaction initiale, afficher l'overlay pour demander l'action utilisateur
-      showOverlay();
-    }
-  });
-
-  // Quand le marqueur disparaît -> pause et montrer overlay pour permettre reprise
-  marker.addEventListener('markerLost', () => {
-    try {
-      video.pause();
-    } catch (e) {
-      console.warn('Erreur pause vidéo :', e);
-    }
-    showOverlay();
-  });
-
-  // Pause quand l'onglet perd le focus et montrer overlay
-  window.addEventListener('blur', () => {
-    try {
-      video.pause();
-    } catch (e) {}
-    showOverlay();
-  });
-
-  // Si l'utilisateur interagit via d'autres moyens (ex: tap sur l'écran), on peut autoriser la lecture
-  // (utile sur certains navigateurs où le click sur overlay est manqué)
-  document.addEventListener('click', async (e) => {
-    // Ignore clicks si l'overlay est déjà caché ou si la cible est le startBtn (déjà géré)
-    if (startOverlay.classList.contains('hidden')) return;
-    if (e.target === startBtn || startOverlay.contains(e.target)) return;
-    // Tentative discrète de lecture si l'utilisateur a tapé ailleurs (gesture)
-    await tryPlayVideo();
-  }, { once: true });
-</script>
-
 </body>
 </html>
