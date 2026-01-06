@@ -2,11 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>AR.js – V.mp4 classique + V2.mp4 fond noir transparent</title>
+  <title>AR.js – V.mp4 + V2.mp4 transparent</title>
 
+  <!-- A-Frame + AR.js -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  <!-- Shader chroma key pour rendre le noir transparent sur V2.mp4 -->
+  <!-- Shader chroma key -->
   <script src="https://cdn.jsdelivr.net/gh/oscarmarinmiro/aframe-chroma-key-shader/dist/aframe-chroma-key-shader.min.js"></script>
 
   <style>
@@ -27,54 +28,48 @@
 </head>
 
 <body>
-<button id="startBtn">▶ Démarrer la vidéo</button>
+<button id="startBtn">▶ Démarrer</button>
 <button id="pauseBtn">⏸ Pause</button>
 
 <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
   <a-assets>
-    <!-- Vidéo 1 : V.mp4 (classique, sans transparence) -->
-    <video id="video" loop playsinline webkit-playsinline crossorigin="anonymous">
+    <!-- Vidéo classique -->
+    <video id="video" loop playsinline webkit-playsinline crossorigin="anonymous" allow="camera; microphone">
       <source src="V.mp4" type="video/mp4">
     </video>
 
-    <!-- Vidéo 2 : V2.mp4 (fond noir à rendre transparent) -->
-    <video id="video2" loop playsinline webkit-playsinline crossorigin="anonymous">
+    <!-- Vidéo avec fond noir à rendre transparent -->
+    <video id="video2" loop playsinline webkit-playsinline crossorigin="anonymous" allow="camera; microphone">
       <source src="V2.mp4" type="video/mp4">
     </video>
-
-    <!-- Image festive au-dessus -->
-    <img id="newyear" src="happy2026.webp">
   </a-assets>
 
   <a-marker preset="hiro" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="5">
-    <!-- Plan vidéo principal: V.mp4 -->
+    <!-- Vidéo principale -->
     <a-video src="#video" width="1" height="1" position="0 0 0" rotation="-90 0 0"></a-video>
 
-    <!-- Plan vidéo secondaire: V2.mp4 avec chroma key (noir transparent)
-         Léger décalage en hauteur pour éviter le z-fighting et overlay propre -->
-    <a-video src="#video2" width="1" height="1" position="0 0.002 0" rotation="-90 0 0"
+    <!-- Vidéo secondaire avec chroma key (noir transparent) -->
+    <a-video src="#video2" width="1" height="1" position="0 0 0.001" rotation="-90 0 0"
              material="shader: chromakey; color: black">
     </a-video>
-
-    <!-- Image "Happy New Year 2026" au-dessus -->
-    <a-image src="#newyear" width="1" height="0.5" position="0 1.1 0" rotation="-90 0 0"></a-image>
   </a-marker>
 
   <a-entity camera></a-entity>
 </a-scene>
 
 <script>
-  const video1 = document.querySelector('#video');   // V.mp4
-  const video2 = document.querySelector('#video2');  // V2.mp4 (chroma key)
+  const videos = [
+    document.querySelector('#video'),
+    document.querySelector('#video2')
+  ];
   const startBtn = document.querySelector('#startBtn');
   const pauseBtn = document.querySelector('#pauseBtn');
 
-  // Démarrer: jouer les deux vidéos avec son (désactivé par défaut, activé au clic)
+  // Démarrer toutes les vidéos
   startBtn.addEventListener('click', async () => {
     try {
-      video1.muted = false;
-      video2.muted = false;
-      await Promise.all([video1.play(), video2.play()]);
+      videos.forEach(v => v.muted = false);
+      await Promise.all(videos.map(v => v.play()));
       startBtn.style.display = 'none';
       pauseBtn.style.display = 'block';
     } catch (err) {
@@ -82,16 +77,14 @@
     }
   });
 
-  // Pause/Reprendre: agir sur les deux vidéos en synchro
+  // Pause/Reprendre toutes les vidéos
   pauseBtn.addEventListener('click', async () => {
-    const bothPlaying = !video1.paused || !video2.paused;
-    if (bothPlaying) {
-      video1.pause();
-      video2.pause();
+    if (videos.some(v => !v.paused)) {
+      videos.forEach(v => v.pause());
       pauseBtn.textContent = '▶ Reprendre';
     } else {
       try {
-        await Promise.all([video1.play(), video2.play()]);
+        await Promise.all(videos.map(v => v.play()));
         pauseBtn.textContent = '⏸ Pause';
       } catch (err) {
         console.warn('Impossible de reprendre les vidéos :', err);
@@ -101,4 +94,3 @@
 </script>
 </body>
 </html>
-
