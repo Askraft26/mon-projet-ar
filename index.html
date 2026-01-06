@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>AR.js – Vidéo avec son et pause</title>
+  <title>AR.js – Vidéo avec son, pause et PNG statique</title>
 
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
@@ -30,14 +30,22 @@
 
 <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
   <a-assets>
+    <!-- Vidéo -->
     <video id="video" loop playsinline webkit-playsinline crossorigin="anonymous">
       <source src="V.mp4" type="video/mp4">
       <source src="V.webm" type="video/webm">
     </video>
+
+    <!-- PNG statique -->
+    <img id="fireworks" src="fireworks.png">
   </a-assets>
 
   <a-marker preset="hiro" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="5">
+    <!-- Vidéo -->
     <a-video src="#video" width="1" height="1" position="0 0 0" rotation="-90 0 0"></a-video>
+
+    <!-- PNG placé juste au-dessus de la vidéo -->
+    <a-image src="#fireworks" width="1" height="1" position="0 1.2 0" rotation="-90 0 0"></a-image>
   </a-marker>
 
   <a-entity camera></a-entity>
