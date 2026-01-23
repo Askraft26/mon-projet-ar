@@ -3,98 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AR Video - Emojis & Écran Interactif</title>
-  
+  <title>AR Holo - Zoom Auto & Interactif</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-
   <style>
-    body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-    
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
     #overlay {
       position: absolute; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-      color: white; text-align: center;
-      transition: opacity 0.5s ease-out;
+      background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center;
+      color: white; text-align: center; cursor: pointer;
     }
-    .btn-start {
-      padding: 15px 40px; border: 2px solid #00E676; border-radius: 30px;
-      background: rgba(0, 230, 118, 0.1); color: #00E676; font-weight: bold;
-      cursor: pointer; margin-top: 20px;
-    }
+    .start-msg { border: 2px solid #00E676; padding: 20px; border-radius: 15px; background: rgba(0,230,118,0.1); }
   </style>
 </head>
 
 <body style="margin:0; overflow:hidden;">
 
   <div id="overlay">
-    <div>
-      <h1 style="letter-spacing: 5px; color: #00E676;">AR HOLO PLAYER</h1>
-      <p style="opacity: 0.8;">Déclenchez l'hologramme avec le marqueur Hiro.</p>
-      <div class="btn-start">ACTIVER L'EXPÉRIENCE</div>
+    <div class="start-msg">
+      <h1>🚀 HOLO-PLAYER V4</h1>
+      <p>Cliquez ici puis scannez le marqueur HIRO</p>
     </div>
   </div>
 
-  <a-scene embedded
-           arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
-           renderer="antialias: true; colorManagement: true; precision: medium;">
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="antialias: true; colorManagement: true;">
     
     <a-assets>
-      <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline></video>
+      <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline loop="true"></video>
     </a-assets>
 
     <a-marker preset="hiro" id="hiroMarker">
-        <a-torus color="#00E676" arc="360" radius="0.5" radius-tubular="0.02" rotation="90 0 0">
-            <a-animation property="rotation" to="90 360 0" dur="3000" repeat="indefinite" easing="linear"></a-animation>
-        </a-torus>
+      <a-cylinder radius="0.5" height="0.1" color="#00E676" opacity="0.5" animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 1000; loop: true"></a-cylinder>
     </a-marker>
 
-    <a-entity id="fixedContent" visible="false" position="0 1.6 -4">
+    <a-entity id="fixedContent" visible="false" position="0 1.6 -3" scale="0 0 0">
       
-      <a-entity id="screen-container">
-        <a-video id="interactive-video" class="clickable" src="#maVideo" 
-                 width="3.2" height="1.8" position="0 0 0" 
-                 material="shader: flat; transparent: true; opacity: 0.9;"></a-video>
-        <a-plane width="3.4" height="2" position="0 0 -0.05" 
-                 material="shader: flat; color: #00E676; transparent: true; opacity: 0.2; blur: 0.1;"></a-plane>
+      <a-entity id="screen-group">
+        <a-video id="videoScreen" class="clickable" src="#maVideo" width="3.2" height="1.8" 
+                 material="shader: flat; side: double;">
+        </a-video>
+        <a-plane width="3.4" height="2" position="0 0 -0.02" material="color: #00E676; opacity: 0.15; shader: flat;"></a-plane>
       </a-entity>
 
-      <a-entity id="progress-bar" position="0 -1 0.05">
-        <a-plane id="bar-bg" width="3.2" height="0.05" color="#333"></a-plane>
-        <a-plane id="bar-fill" width="0.1" height="0.05" color="#00E676" position="-1.6 0 0.01"></a-plane>
+      <a-entity position="0 -1.1 0">
+        <a-plane width="3.2" height="0.06" color="#222"></a-plane>
+        <a-plane id="progressBar" width="0.01" height="0.06" color="#00E676" position="-1.6 0 0.01"></a-plane>
       </a-entity>
 
-      <a-entity position="0 -1.4 0.1">
-        
-        <a-circle id="btn-play" class="clickable" radius="0.25" color="#FFF" 
-                  animation__mouseenter="property: scale; to: 1.1 1.1 1.1; dur: 200; startEvents: mouseenter"
-                  animation__mouseleave="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
-          <a-text id="emoji-play" value="▶️" align="center" position="0 0 0.01" width="1.5" height="1.5"></a-text>
-          <a-text id="emoji-pause" value="⏸️" align="center" position="0 0 0.01" width="1.5" height="1.5" visible="false"></a-text>
+      <a-entity position="0 -1.6 0.1">
+        <a-circle id="btn-play" class="clickable" radius="0.25" color="#FFF">
+          <a-text id="playIcon" value="▶️" align="center" width="2" position="0 0 0.01"></a-text>
         </a-circle>
 
-        <a-circle id="btn-back" class="clickable" position="-0.8 0 0" radius="0.18" color="#FFC65D" opacity="0.8"
-                  animation__mouseenter="property: scale; to: 1.1 1.1 1.1; dur: 200; startEvents: mouseenter"
-                  animation__mouseleave="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
-          <a-text value="⏪" align="center" color="#000" position="0 0 0.01" width="1.5" height="1.5"></a-text>
+        <a-circle id="btn-back" class="clickable" position="-0.8 0 0" radius="0.2" color="#FFC65D">
+          <a-text value="⏪" align="center" width="1.8" position="0 0 0.01"></a-text>
         </a-circle>
 
-        <a-circle id="btn-forward" class="clickable" position="0.8 0 0" radius="0.18" color="#FFC65D" opacity="0.8"
-                  animation__mouseenter="property: scale; to: 1.1 1.1 1.1; dur: 200; startEvents: mouseenter"
-                  animation__mouseleave="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
-          <a-text value="⏩" align="center" color="#000" position="0 0 0.01" width="1.5" height="1.5"></a-text>
+        <a-circle id="btn-forward" class="clickable" position="0.8 0 0" radius="0.2" color="#FFC65D">
+          <a-text value="⏩" align="center" width="1.8" position="0 0 0.01"></a-text>
         </a-circle>
-
       </a-entity>
+
     </a-entity>
 
-    <a-entity camera look-controls wasd-controls position="0 1.6 0">
-        <a-cursor id="mainCursor" raycaster="objects: .clickable" color="#00E676" opacity="0.8"
-            cursor="fuse: true; fuseTimeout: 1000">
-            <a-animation begin="fusing" easing="ease-in" attribute="scale" fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="1000"></a-animation>
-            <a-animation begin="click" easing="ease-out" attribute="scale" fill="backwards" from="0.5 0.5 0.5" to="1 1 1" dur="150"></a-animation>
-        </a-cursor>
+    <a-entity camera look-controls>
+      <a-cursor id="cursor" raycaster="objects: .clickable" color="#00E676" fuse="false">
+        <a-entity animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"></a-entity>
+      </a-cursor>
     </a-entity>
 
   </a-scene>
@@ -102,65 +77,60 @@
   <script>
     const video = document.querySelector("#maVideo");
     const fixedContent = document.querySelector("#fixedContent");
-    const barFill = document.querySelector("#bar-fill");
-    
-    const btnPlay = document.querySelector("#btn-play");
-    const emojiPlay = document.querySelector("#emoji-play");
-    const emojiPause = document.querySelector("#emoji-pause");
-    const interactiveVideoScreen = document.querySelector("#interactive-video"); // L'écran vidéo lui-même
+    const playIcon = document.querySelector("#playIcon");
+    const progressBar = document.querySelector("#progressBar");
 
-    // --- 1. Démarrage Premium (déblocage audio/vidéo) ---
+    // 1. Déverrouillage initial
     document.querySelector("#overlay").addEventListener('click', function() {
       this.style.display = 'none';
-      video.play().then(() => video.pause()); // Préchauffage
+      video.play().then(() => video.pause());
     });
 
-    // --- 2. Détection Hiro et apparition animée ---
+    // 2. Détection Hiro + ZOOM AUTOMATIQUE
     document.querySelector("#hiroMarker").addEventListener("markerFound", () => {
-      if (!fixedContent.getAttribute("visible")) {
+      if (fixedContent.getAttribute("visible") === false) {
         fixedContent.setAttribute("visible", "true");
-        fixedContent.setAttribute("animation", "property: scale; from: 0 0 0; to: 1 1 1; dur: 800; easing: easeOutBack;");
-        togglePlayback(true); // Lance la vidéo au scan
+        
+        // Animation de ZOOM (Scale de 0 à 1)
+        fixedContent.setAttribute("animation", {
+          property: 'scale',
+          from: '0 0 0',
+          to: '1 1 1',
+          dur: 1000,
+          easing: 'easeOutElastic' // Effet rebond dynamique
+        });
+
+        video.play();
+        playIcon.setAttribute("value", "⏸️");
       }
     });
 
-    // --- 3. Logique Play/Pause centralisée ---
-    function togglePlayback(forcePlay = false) {
-      if (video.paused || forcePlay) {
+    // 3. Fonction Toggle Play/Pause
+    function toggleVideo() {
+      if (video.paused) {
         video.play();
-        emojiPlay.setAttribute("visible", false);
-        emojiPause.setAttribute("visible", true);
-        btnPlay.setAttribute("color", "#00E676"); // Couleur verte pour "en lecture"
+        playIcon.setAttribute("value", "⏸️");
       } else {
         video.pause();
-        emojiPlay.setAttribute("visible", true);
-        emojiPause.setAttribute("visible", false);
-        btnPlay.setAttribute("color", "#FFF"); // Couleur blanche pour "en pause"
+        playIcon.setAttribute("value", "▶️");
       }
     }
 
-    // --- 4. Interactions ---
-    btnPlay.addEventListener('click', () => togglePlayback()); // Bouton Play/Pause
-    interactiveVideoScreen.addEventListener('click', () => togglePlayback()); // Clic sur la vidéo
+    // 4. Interactions (Écran + Bouton)
+    document.querySelector("#videoScreen").addEventListener('click', toggleVideo);
+    document.querySelector("#btn-play").addEventListener('click', toggleVideo);
 
-    document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 5; });
-    document.querySelector("#btn-forward").addEventListener('click', () => { video.currentTime += 5; });
+    document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 10; });
+    document.querySelector("#btn-forward").addEventListener('click', () => { video.currentTime += 10; });
 
-    // --- 5. Barre de progression fluide ---
+    // 5. Mise à jour de la barre de progression
     video.addEventListener('timeupdate', () => {
-      let percent = video.currentTime / video.duration;
-      if (isNaN(percent)) percent = 0;
-      barFill.setAttribute("width", percent * 3.2);
-      barFill.setAttribute("position", `${(percent * 3.2 / 2) - 1.6} 0 0.01`);
+      const progress = video.currentTime / video.duration;
+      if (!isNaN(progress)) {
+        progressBar.setAttribute("width", progress * 3.2);
+        progressBar.setAttribute("position", `${(progress * 3.2 / 2) - 1.6} 0 0.01`);
+      }
     });
-
-    // --- 6. Synchronisation des icônes à la fin de la vidéo ---
-    video.addEventListener('ended', () => {
-        togglePlayback(false); // Passe en pause à la fin
-        video.currentTime = 0; // Remet au début pour le prochain Play
-    });
-
   </script>
 </body>
 </html>
-```http://googleusercontent.com/image_generation_content/1
