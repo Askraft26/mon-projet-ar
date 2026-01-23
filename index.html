@@ -2,93 +2,110 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>XR Video Player - Stable & Permanent</title>
+    <title>Spatial Video Player - Permanent</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
       #overlay {
         position: absolute; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
-        color: white; font-family: sans-serif; cursor: pointer; text-align: center;
+        background: rgba(0,0,0,0.85); display: flex; flex-direction: column; 
+        justify-content: center; align-items: center; color: white; 
+        font-family: sans-serif; cursor: pointer;
       }
+      .instruction { font-size: 0.8em; margin-top: 10px; color: #ccc; }
     </style>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
-    <div id="overlay">Cliquer pour lancer</div>
+    <div id="overlay">
+      <div>LANCER L'EXPÉRIENCE</div>
+      <div class="instruction">Scannez le marqueur Hiro pour ancrer la vidéo</div>
+    </div>
 
     <a-scene 
       embedded 
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
-      renderer="logarithmicDepthBuffer: true; precision: medium;"
-      vr-mode-ui="enabled: false">
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      renderer="antialias: true; logarithmicDepthBuffer: true; colorManagement: true;">
 
       <a-assets>
-        <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline loop="true"></video>
+        <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline></video>
       </a-assets>
 
-      <a-marker 
-        preset="hiro" 
-        id="marker"
-        smooth="true" 
-        smoothCount="10" 
-        smoothTolerance="0.01" 
-        smoothThreshold="5">
-        
-        <a-entity id="content" rotation="-90 0 0" visible="false">
-          <a-video src="#maVideo" width="2" height="1.125" position="0 0.6 0"></a-video>
+      <a-marker preset="hiro" id="anchor-marker">
+        <a-entity id="player-container" visible="false">
+          
+          <a-video id="video-screen" src="#maVideo" width="2" height="1.125" position="0 0.5 0"></a-video>
 
-          <a-entity position="0 -0.2 0.1">
-            <a-box id="btn-play" class="clickable" position="0 0 0" scale="0.3 0.3 0.1" color="#4CC3D9">
-              <a-text value="PAUSE" align="center" position="0 0 0.6"></a-text>
+          <a-entity id="controls" position="0 -0.2 0.1">
+            <a-box id="btn-play" class="clickable" position="0 0 0" scale="0.3 0.3 0.05" color="#4CC3D9">
+              <a-text value="PLAY" align="center" position="0 0 0.6" scale="0.6 0.6 0.6"></a-text>
             </a-box>
-            <a-box id="btn-back" class="clickable" position="-0.5 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-              <a-text value="-5s" align="center" position="0 0 0.6"></a-text>
+            <a-box id="btn-back" class="clickable" position="-0.5 0 0" scale="0.3 0.3 0.05" color="#FFC65D">
+              <a-text value="-5s" align="center" position="0 0 0.6" scale="0.6 0.6 0.6"></a-text>
             </a-box>
-            <a-box id="btn-forward" class="clickable" position="0.5 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-              <a-text value="+5s" align="center" position="0 0 0.6"></a-text>
+            <a-box id="btn-forward" class="clickable" position="0.5 0 0" scale="0.3 0.3 0.05" color="#FFC65D">
+              <a-text value="+5s" align="center" position="0 0 0.6" scale="0.6 0.6 0.6"></a-text>
             </a-box>
           </a-entity>
+
         </a-entity>
       </a-marker>
 
       <a-entity camera>
-        <a-cursor id="cursor" raycaster="objects: .clickable" color="white"></a-cursor>
+        <a-cursor raycaster="objects: .clickable" color="#FFEB3B"></a-cursor>
       </a-entity>
     </a-scene>
 
     <script>
       const video = document.querySelector("#maVideo");
       const overlay = document.querySelector("#overlay");
-      const marker = document.querySelector("#marker");
-      const content = document.querySelector("#content");
-      let markerFound = false;
+      const marker = document.querySelector("#anchor-marker");
+      const player = document.querySelector("#player-container");
+      const scene = document.querySelector("a-scene");
+      let isAnchored = false;
 
-      // 1. Démarrage
+      // Déverrouillage de l'audio
       overlay.addEventListener('click', () => {
         overlay.style.display = 'none';
-        // On ne joue pas la vidéo de suite, on attend de voir le marqueur
       });
 
-      // 2. Logique de permanence : Une fois vu, le contenu reste
+      // LOGIQUE D'ANCRAGE PERMANENT
       marker.addEventListener('markerFound', () => {
-        if (!markerFound) {
-          content.setAttribute('visible', 'true');
-          video.play();
-          markerFound = true;
+        if (!isAnchored) {
+          // 1. On capture la position et rotation actuelle du marqueur dans le monde réel
+          const worldPos = new THREE.Vector3();
+          const worldQuat = new THREE.Quaternion();
+          const worldScale = new THREE.Vector3();
           
-          /* OPTIONNEL: Pour que la vidéo ne "suive" plus le marqueur 
-            mais reste fixe devant la caméra une fois détectée :
-            document.querySelector('a-scene').appendChild(content);
-            content.setAttribute('position', '0 0 -5'); 
-            content.setAttribute('rotation', '0 0 0');
-          */
+          marker.object3D.updateMatrixWorld();
+          marker.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+
+          // 2. On déplace l'entité du marqueur vers la racine de la scène
+          scene.appendChild(player);
+
+          // 3. On applique les coordonnées mondiales pour que l'objet ne bouge pas d'un millimètre
+          player.object3D.position.copy(worldPos);
+          player.object3D.quaternion.copy(worldQuat);
+          
+          // 4. On le rend visible et on lance la vidéo
+          player.setAttribute('visible', 'true');
+          video.play();
+          
+          isAnchored = true; // On verrouille pour ne pas répéter l'opération
+          console.log("Ancrage spatial activé !");
         }
       });
 
-      // 3. Contrôles
+      // Contrôles Vidéo
       document.querySelector("#btn-play").addEventListener('click', () => {
-        if (video.paused) { video.play(); } else { video.pause(); }
+        const txt = document.querySelector("#btn-play a-text");
+        if (video.paused) {
+          video.play();
+          txt.setAttribute('value', 'PAUSE');
+        } else {
+          video.pause();
+          txt.setAttribute('value', 'PLAY');
+        }
       });
 
       document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 5; });
