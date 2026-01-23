@@ -3,107 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lecteur Vidéo AR Stable - Hybride</title>
+  <title>AR Video - Premium UX</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <style>
     #overlay {
       position: absolute; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
-      color: white; font-family: sans-serif; cursor: pointer; text-align: center;
+      background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+      display: flex; justify-content: center; align-items: center;
+      color: white; font-family: 'Segoe UI', sans-serif; cursor: pointer; text-align: center;
+    }
+    .btn-start {
+      padding: 15px 40px; border: 2px solid #4CC3D9; border-radius: 30px;
+      background: rgba(76, 195, 217, 0.1); color: #4CC3D9; font-weight: bold;
     }
   </style>
 </head>
 
-<body style="margin:0; overflow:hidden; background:#111;">
+<body style="margin:0; overflow:hidden;">
 
   <div id="overlay">
     <div>
-      <h2>Système Prêt</h2>
-      <p>Cliquez pour activer la caméra,<br>puis scannez le marqueur Hiro.</p>
+      <h1 style="letter-spacing: 5px;">STATION AR</h1>
+      <p style="opacity: 0.6;">Scannez le marqueur HIRO pour projeter l'écran</p>
+      <div class="btn-start">ACTIVER L'EXPÉRIENCE</div>
     </div>
   </div>
 
   <a-scene embedded
-           arjs="sourceType: webcam; trackingMethod: best; detectionMode: mono_and_matrix; debugUIEnabled: false;"
-           renderer="antialias: true; logarithmicDepthBuffer: true;">
+           arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
+           renderer="antialias: true; colorManagement: true; precision: medium;">
     
     <a-assets>
       <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline></video>
-    </a-assets>
+      </a-assets>
 
     <a-marker preset="hiro" id="hiroMarker">
-        <a-box position="0 0.1 0" scale="0.2 0.2 0.2" color="#FFD700" animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"></a-box>
+        <a-torus color="#4CC3D9" arc="360" radius="0.5" radius-tubular="0.02" rotation="90 0 0">
+            <a-animation property="rotation" to="90 360 0" dur="3000" repeat="indefinite" easing="linear"></a-animation>
+        </a-torus>
     </a-marker>
 
-    <a-entity id="fixedContent" visible="false" position="0 1.6 -3">
+    <a-entity id="fixedContent" visible="false" position="0 1.6 -4">
       
-      <a-video src="#maVideo" width="2.5" height="1.4" position="0 0 0"></a-video>
-
-      <a-entity position="0 -1 0.2">
-        <a-box id="btn-play" class="clickable" scale="0.4 0.4 0.1" color="#4CC3D9">
-          <a-text value="PLAY" align="center" position="0 0 0.6"></a-text>
-        </a-box>
-        <a-box id="btn-back" class="clickable" position="-0.6 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-          <a-text value="-5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
-        </a-box>
-        <a-box id="btn-forward" class="clickable" position="0.6 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-          <a-text value="+5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
-        </a-box>
+      <a-entity id="screen-container">
+        <a-video src="#maVideo" width="3.2" height="1.8" position="0 0 0" material="shader: flat;"></a-video>
+        <a-rect width="3.3" height="1.9" position="0 0 -0.01" material="color: #4CC3D9; opacity: 0.5;"></a-rect>
       </a-entity>
 
+      <a-entity id="progress-bar" position="0 -1 0.05">
+        <a-plane id="bar-bg" width="3.2" height="0.05" color="#333"></a-plane>
+        <a-plane id="bar-fill" width="0.1" height="0.05" color="#4CC3D9" position="-1.6 0 0.01"></a-plane>
+      </a-entity>
+
+      <a-entity position="0 -1.4 0.1">
+        
+        <a-circle id="btn-play" class="clickable" radius="0.25" color="#FFF" 
+                  animation__mouseenter="property: scale; to: 1.1 1.1 1.1; dur: 200; startEvents: mouseenter"
+                  animation__mouseleave="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
+          <a-entity id="icon-play" geometry="primitive: triangle" material="color: #111" scale="0.15 0.15 0.15" rotation="0 0 -90" position="0.02 0 0.01"></a-entity>
+          <a-entity id="icon-pause" visible="false" position="0 0 0.01">
+            <a-plane width="0.05" height="0.15" color="#111" position="-0.05 0 0"></a-plane>
+            <a-plane width="0.05" height="0.15" color="#111" position="0.05 0 0"></a-plane>
+          </a-entity>
+        </a-circle>
+
+        <a-circle id="btn-back" class="clickable" position="-0.8 0 0" radius="0.18" color="#FFC65D" opacity="0.8">
+          <a-text value="<<" align="center" color="#000" position="0 0 0.01" width="3"></a-text>
+        </a-circle>
+
+        <a-circle id="btn-forward" class="clickable" position="0.8 0 0" radius="0.18" color="#FFC65D" opacity="0.8">
+          <a-text value=">>" align="center" color="#000" position="0 0 0.01" width="3"></a-text>
+        </a-circle>
+
+      </a-entity>
     </a-entity>
 
     <a-entity camera look-controls wasd-controls position="0 1.6 0">
-        <a-cursor raycaster="objects: .clickable" color="white"></a-cursor>
+        <a-cursor id="mainCursor" raycaster="objects: .clickable" color="#4CC3D9">
+            <a-animation begin="fusing" easing="ease-in" attribute="scale" fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="1500"></a-animation>
+        </a-cursor>
     </a-entity>
 
   </a-scene>
 
   <script>
-    const overlay = document.querySelector("#overlay");
     const video = document.querySelector("#maVideo");
-    const marker = document.querySelector("#hiroMarker");
     const fixedContent = document.querySelector("#fixedContent");
+    const barFill = document.querySelector("#bar-fill");
+    
     const btnPlay = document.querySelector("#btn-play");
-    const btnText = btnPlay.querySelector("a-text");
+    const iconPlay = document.querySelector("#icon-play");
+    const iconPause = document.querySelector("#icon-pause");
 
-    // 1. Activation de l'audio au clic
-    overlay.addEventListener('click', () => {
-      overlay.style.display = 'none';
-      // Préchauffage de la vidéo pour mobile
-      video.play().then(() => { video.pause(); });
+    // 1. Démarrage Premium
+    document.querySelector("#overlay").addEventListener('click', function() {
+      this.style.display = 'none';
+      video.play().then(() => video.pause());
     });
 
-    // 2. Logique Hybride : Hiro déclenche le contenu permanent
-    marker.addEventListener("markerFound", () => {
+    // 2. Détection Hiro
+    document.querySelector("#hiroMarker").addEventListener("markerFound", () => {
       if (!fixedContent.getAttribute("visible")) {
-        console.log("Marqueur Hiro détecté : Activation du contenu permanent ✅");
         fixedContent.setAttribute("visible", "true");
-        // Optionnel : lancer la vidéo automatiquement au scan
+        fixedContent.setAttribute("animation", "property: scale; from: 0 0 0; to: 1 1 1; dur: 800; easing: easeOutBack;");
         video.play();
-        btnText.setAttribute('value', 'PAUSE');
+        toggleIcons(true);
       }
     });
 
-    // 3. Contrôles de la vidéo
+    // 3. Gestion Icônes Play/Pause
+    function toggleIcons(isPlaying) {
+      iconPlay.setAttribute("visible", !isPlaying);
+      iconPause.setAttribute("visible", isPlaying);
+      btnPlay.setAttribute("color", isPlaying ? "#4CC3D9" : "#FFF");
+    }
+
     btnPlay.addEventListener('click', () => {
       if (video.paused) {
         video.play();
-        btnText.setAttribute('value', 'PAUSE');
+        toggleIcons(true);
       } else {
         video.pause();
-        btnText.setAttribute('value', 'PLAY');
+        toggleIcons(false);
       }
     });
 
-    document.querySelector("#btn-back").addEventListener('click', () => {
-      video.currentTime -= 5;
+    // 4. Barre de progression fluide
+    video.addEventListener('timeupdate', () => {
+      let percent = video.currentTime / video.duration;
+      if (isNaN(percent)) percent = 0;
+      // Mise à jour visuelle de la barre
+      barFill.setAttribute("width", percent * 3.2);
+      barFill.setAttribute("position", `${(percent * 3.2 / 2) - 1.6} 0 0.01`);
     });
 
-    document.querySelector("#btn-forward").addEventListener('click', () => {
-      video.currentTime += 5;
-    });
+    // 5. Navigation rapide
+    document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 5; });
+    document.querySelector("#btn-forward").addEventListener('click', () => { video.currentTime += 5; });
+
   </script>
 </body>
 </html>
