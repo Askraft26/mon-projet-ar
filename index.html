@@ -7,61 +7,68 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
-      /* Style pour l'overlay de démarrage (nécessaire pour les navigateurs mobiles) */
       #overlay {
         position: absolute; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center;
-        color: white; font-family: sans-serif; cursor: pointer;
+        background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
+        color: white; font-family: sans-serif; cursor: pointer; text-align: center;
       }
     </style>
   </head>
 
   <body style="margin: 0; overflow: hidden;">
     
-    <div id="overlay">Cliquer pour lancer l'expérience</div>
+    <div id="overlay">
+        <h1>AR Video Player</h1>
+        <p>Cliquer pour lancer l'expérience</p>
+    </div>
 
     <a-scene 
       embedded 
-      arjs="sourceType: webcam; debugUIEnabled: false;" 
-      renderer="logarithmicDepthBuffer: true;"
-      vr-mode-ui="enabled: true">
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;" 
+      renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+      vr-mode-ui="enabled: false">
 
       <a-assets>
         <video id="maVideo" 
                src="V2.mp4" 
                crossorigin="anonymous" 
                playsinline 
-               webkit-playsinline>
+               webkit-playsinline
+               loop="true">
         </video>
       </a-assets>
 
       <a-marker preset="hiro">
         <a-entity rotation="-90 0 0">
           
-          <a-video src="#maVideo" width="2" height="1.125" position="0 0.5 0"></a-video>
+          <a-video src="#maVideo" width="2" height="1.125" position="0 0.6 0"></a-video>
 
-          <a-entity position="0 -0.5 0.1">
+          <a-entity position="0 -0.2 0.1">
             <a-box id="btn-play" class="clickable" position="0 0 0" scale="0.3 0.3 0.1" color="#4CC3D9">
-              <a-text value="PAUSE" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
+              <a-text value="PAUSE" align="center" position="0 0 0.6"></a-text>
             </a-box>
 
             <a-box id="btn-back" class="clickable" position="-0.5 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-              <a-text value="-5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
+              <a-text value="-5s" align="center" position="0 0 0.6"></a-text>
             </a-box>
 
             <a-box id="btn-forward" class="clickable" position="0.5 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
-              <a-text value="+5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
+              <a-text value="+5s" align="center" position="0 0 0.6"></a-text>
             </a-box>
           </a-entity>
-
         </a-entity>
       </a-marker>
 
-      <a-entity camera look-controls>
+      <a-entity camera>
         <a-cursor 
           id="cursor"
           raycaster="objects: .clickable"
-          color="white">
+          material="color: white; shader: flat"
+          cursor="fuse: true; fuseTimeout: 500"
+          position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03">
+          <a-animation begin="fusing" easing="ease-in" attribute="scale" fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="500"></a-animation>
+          <a-animation begin="click" easing="ease-in" attribute="scale" fill="backwards" from="0.1 0.1 0.1" to="1 1 1" dur="150"></a-animation>
         </a-cursor>
       </a-entity>
 
@@ -75,14 +82,14 @@
       const btnForward = document.querySelector("#btn-forward");
       const btnText = btnPlay.querySelector("a-text");
 
-      // Suppression de l'overlay et activation audio au premier clic
+      // Handle Initial Start
       overlay.addEventListener('click', () => {
         overlay.style.display = 'none';
-        video.play(); // Lance la vidéo immédiatement
+        video.play();
       });
 
-      // Gestion Play / Pause
-      btnPlay.addEventListener('click', () => {
+      // Unified Play/Pause Logic
+      const togglePlayback = () => {
         if (video.paused) {
           video.play();
           btnText.setAttribute('value', 'PAUSE');
@@ -92,16 +99,23 @@
           btnText.setAttribute('value', 'PLAY');
           btnPlay.setAttribute('color', '#EF2D5E');
         }
-      });
+      };
 
-      // Reculer
+      // Listeners using A-Frame Events
+      btnPlay.addEventListener('click', togglePlayback);
+      
       btnBack.addEventListener('click', () => {
-        video.currentTime -= 5;
+        video.currentTime = Math.max(0, video.currentTime - 5);
       });
 
-      // Avancer
       btnForward.addEventListener('click', () => {
-        video.currentTime += 5;
+        video.currentTime = Math.min(video.duration, video.currentTime + 5);
+      });
+
+      // Extra: Visual feedback for hover
+      document.querySelectorAll('.clickable').forEach(el => {
+        el.addEventListener('mouseenter', () => el.setAttribute('scale', '0.35 0.35 0.12'));
+        el.addEventListener('mouseleave', () => el.setAttribute('scale', '0.3 0.3 0.1'));
       });
     </script>
   </body>
