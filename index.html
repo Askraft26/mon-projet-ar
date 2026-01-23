@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AR Holo - Final Fix</title>
+  <title>AR Holo - Taille Réduite</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <style>
@@ -21,8 +21,8 @@
 
   <div id="overlay">
     <div class="start-msg">
-      <h1>🚀 HOLO-PLAYER ACTIVÉ</h1>
-      <p>Cliquez pour démarrer<br>puis visez le marqueur HIRO</p>
+      <h1>🚀 HOLO-PLAYER MINI</h1>
+      <p>Cliquez pour démarrer<br>puis scannez le marqueur HIRO</p>
     </div>
   </div>
 
@@ -36,34 +36,34 @@
     </a-assets>
 
     <a-marker preset="hiro" id="hiroMarker">
-      <a-torus-knot radius="0.3" radius-tubular="0.05" color="#00E676" 
+      <a-torus-knot radius="0.2" radius-tubular="0.03" color="#00E676" 
                     animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"></a-torus-knot>
     </a-marker>
 
-    <a-entity id="fixedContent" visible="false" position="0 1.6 -3" scale="0.01 0.01 0.01">
+    <a-entity id="fixedContent" visible="false" position="0 1.4 -2.5" scale="0.01 0.01 0.01">
       
-      <a-video id="videoScreen" class="clickable" src="#maVideo" width="3.2" height="1.8" position="0 0.5 0"></a-video>
+      <a-video id="videoScreen" class="clickable" src="#maVideo" width="2.2" height="1.24" position="0 0.4 0"></a-video>
       
-      <a-entity position="0 -0.6 0">
-        <a-plane width="3.2" height="0.06" color="#222"></a-plane>
-        <a-plane id="progressBar" width="0.1" height="0.06" color="#00E676" position="-1.6 0 0.01"></a-plane>
+      <a-entity position="0 -0.35 0">
+        <a-plane width="2.2" height="0.04" color="#222"></a-plane>
+        <a-plane id="progressBar" width="0.01" height="0.04" color="#00E676" position="-1.1 0 0.01"></a-plane>
       </a-entity>
 
-      <a-entity id="controls" position="0 -1.2 0">
+      <a-entity id="controls" position="0 -0.8 0">
         
-        <a-entity id="btn-back" class="clickable" position="-1 0 0">
-          <a-circle radius="0.3" color="#FFC65D"></a-circle>
-          <a-text value="⏪" align="center" width="3" position="0 0 0.05"></a-text>
+        <a-entity id="btn-back" class="clickable" position="-0.7 0 0">
+          <a-circle radius="0.2" color="#FFC65D"></a-circle>
+          <a-text value="⏪" align="center" width="2.5" position="0 0 0.05"></a-text>
         </a-entity>
 
         <a-entity id="btn-play" class="clickable" position="0 0 0">
-          <a-circle radius="0.35" color="#FFF"></a-circle>
-          <a-text id="playIcon" value="⏸️" align="center" width="3.5" position="0 0 0.05" color="#000"></a-text>
+          <a-circle radius="0.25" color="#FFF"></a-circle>
+          <a-text id="playIcon" value="⏸️" align="center" width="3" position="0 0 0.05" color="#000"></a-text>
         </a-entity>
 
-        <a-entity id="btn-forward" class="clickable" position="1 0 0">
-          <a-circle radius="0.3" color="#FFC65D"></a-circle>
-          <a-text value="⏩" align="center" width="3" position="0 0 0.05"></a-text>
+        <a-entity id="btn-forward" class="clickable" position="0.7 0 0">
+          <a-circle radius="0.2" color="#FFC65D"></a-circle>
+          <a-text value="⏩" align="center" width="2.5" position="0 0 0.05"></a-text>
         </a-entity>
 
       </a-entity>
@@ -82,31 +82,24 @@
     const playIcon = document.querySelector("#playIcon");
     const progressBar = document.querySelector("#progressBar");
 
-    // Démarrage (bypass sécurité navigateur)
     document.querySelector("#overlay").addEventListener('click', function() {
       this.style.display = 'none';
       video.play().then(() => video.pause());
     });
 
-    // Détection Hiro + Zoom automatique
     document.querySelector("#hiroMarker").addEventListener("markerFound", () => {
       if (fixedContent.getAttribute("visible") === "false" || !fixedContent.getAttribute("visible")) {
         fixedContent.setAttribute("visible", "true");
-        
-        // Animation de Zoom (0.01 à 1)
         fixedContent.setAttribute("animation", {
           property: 'scale',
-          to: '1 1 1',
-          dur: 1200,
+          to: '1 1 1', // Zoom final vers l'échelle réduite définie plus haut
+          dur: 1000,
           easing: 'easeOutElastic'
         });
-        
         video.play();
         playIcon.setAttribute("value", "⏸️");
       }
     });
-
-    // --- LOGIQUE DES BOUTONS ---
 
     function toggleVideo() {
       if (video.paused) {
@@ -118,33 +111,16 @@
       }
     }
 
-    // Assignation des événements
-    document.querySelector("#btn-play").addEventListener('click', (e) => {
-      console.log("Play cliqué");
-      toggleVideo();
-    });
+    document.querySelector("#btn-play").addEventListener('click', toggleVideo);
+    document.querySelector("#videoScreen").addEventListener('click', toggleVideo);
+    document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 10; });
+    document.querySelector("#btn-forward").addEventListener('click', () => { video.currentTime += 10; });
 
-    document.querySelector("#videoScreen").addEventListener('click', (e) => {
-      console.log("Écran cliqué");
-      toggleVideo();
-    });
-
-    document.querySelector("#btn-back").addEventListener('click', (e) => {
-      console.log("Back cliqué");
-      video.currentTime = Math.max(0, video.currentTime - 10);
-    });
-
-    document.querySelector("#btn-forward").addEventListener('click', (e) => {
-      console.log("Forward cliqué");
-      video.currentTime = Math.min(video.duration, video.currentTime + 10);
-    });
-
-    // Barre de progression
     video.addEventListener('timeupdate', () => {
       const progress = video.currentTime / video.duration;
       if (!isNaN(progress)) {
-        progressBar.setAttribute("width", progress * 3.2);
-        progressBar.setAttribute("position", `${(progress * 3.2 / 2) - 1.6} 0 0.01`);
+        progressBar.setAttribute("width", progress * 2.2);
+        progressBar.setAttribute("position", `${(progress * 2.2 / 2) - 1.1} 0 0.01`);
       }
     });
   </script>
