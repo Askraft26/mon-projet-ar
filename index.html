@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AR Holo - Zoom Auto & Interactif</title>
+  <title>AR Holo - Final Fix</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <style>
@@ -21,55 +21,57 @@
 
   <div id="overlay">
     <div class="start-msg">
-      <h1>🚀 HOLO-PLAYER V4</h1>
-      <p>Cliquez ici puis scannez le marqueur HIRO</p>
+      <h1>🚀 HOLO-PLAYER ACTIVÉ</h1>
+      <p>Cliquez pour démarrer<br>puis visez le marqueur HIRO</p>
     </div>
   </div>
 
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="antialias: true; colorManagement: true;">
+  <a-scene embedded 
+           arjs="sourceType: webcam; debugUIEnabled: false;" 
+           renderer="antialias: true; colorManagement: true;"
+           cursor="rayOrigin: mouse" raycaster="objects: .clickable">
     
     <a-assets>
       <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline loop="true"></video>
     </a-assets>
 
     <a-marker preset="hiro" id="hiroMarker">
-      <a-cylinder radius="0.5" height="0.1" color="#00E676" opacity="0.5" animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 1000; loop: true"></a-cylinder>
+      <a-torus-knot radius="0.3" radius-tubular="0.05" color="#00E676" 
+                    animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"></a-torus-knot>
     </a-marker>
 
-    <a-entity id="fixedContent" visible="false" position="0 1.6 -3" scale="0 0 0">
+    <a-entity id="fixedContent" visible="false" position="0 1.6 -3" scale="0.01 0.01 0.01">
       
-      <a-entity id="screen-group">
-        <a-video id="videoScreen" class="clickable" src="#maVideo" width="3.2" height="1.8" 
-                 material="shader: flat; side: double;">
-        </a-video>
-        <a-plane width="3.4" height="2" position="0 0 -0.02" material="color: #00E676; opacity: 0.15; shader: flat;"></a-plane>
-      </a-entity>
-
-      <a-entity position="0 -1.1 0">
+      <a-video id="videoScreen" class="clickable" src="#maVideo" width="3.2" height="1.8" position="0 0.5 0"></a-video>
+      
+      <a-entity position="0 -0.6 0">
         <a-plane width="3.2" height="0.06" color="#222"></a-plane>
-        <a-plane id="progressBar" width="0.01" height="0.06" color="#00E676" position="-1.6 0 0.01"></a-plane>
+        <a-plane id="progressBar" width="0.1" height="0.06" color="#00E676" position="-1.6 0 0.01"></a-plane>
       </a-entity>
 
-      <a-entity position="0 -1.6 0.1">
-        <a-circle id="btn-play" class="clickable" radius="0.25" color="#FFF">
-          <a-text id="playIcon" value="▶️" align="center" width="2" position="0 0 0.01"></a-text>
-        </a-circle>
+      <a-entity id="controls" position="0 -1.2 0">
+        
+        <a-entity id="btn-back" class="clickable" position="-1 0 0">
+          <a-circle radius="0.3" color="#FFC65D"></a-circle>
+          <a-text value="⏪" align="center" width="3" position="0 0 0.05"></a-text>
+        </a-entity>
 
-        <a-circle id="btn-back" class="clickable" position="-0.8 0 0" radius="0.2" color="#FFC65D">
-          <a-text value="⏪" align="center" width="1.8" position="0 0 0.01"></a-text>
-        </a-circle>
+        <a-entity id="btn-play" class="clickable" position="0 0 0">
+          <a-circle radius="0.35" color="#FFF"></a-circle>
+          <a-text id="playIcon" value="⏸️" align="center" width="3.5" position="0 0 0.05" color="#000"></a-text>
+        </a-entity>
 
-        <a-circle id="btn-forward" class="clickable" position="0.8 0 0" radius="0.2" color="#FFC65D">
-          <a-text value="⏩" align="center" width="1.8" position="0 0 0.01"></a-text>
-        </a-circle>
+        <a-entity id="btn-forward" class="clickable" position="1 0 0">
+          <a-circle radius="0.3" color="#FFC65D"></a-circle>
+          <a-text value="⏩" align="center" width="3" position="0 0 0.05"></a-text>
+        </a-entity>
+
       </a-entity>
 
     </a-entity>
 
     <a-entity camera look-controls>
-      <a-cursor id="cursor" raycaster="objects: .clickable" color="#00E676" fuse="false">
-        <a-entity animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"></a-entity>
-      </a-cursor>
+      <a-cursor raycaster="objects: .clickable" color="#00E676"></a-cursor>
     </a-entity>
 
   </a-scene>
@@ -80,32 +82,32 @@
     const playIcon = document.querySelector("#playIcon");
     const progressBar = document.querySelector("#progressBar");
 
-    // 1. Déverrouillage initial
+    // Démarrage (bypass sécurité navigateur)
     document.querySelector("#overlay").addEventListener('click', function() {
       this.style.display = 'none';
       video.play().then(() => video.pause());
     });
 
-    // 2. Détection Hiro + ZOOM AUTOMATIQUE
+    // Détection Hiro + Zoom automatique
     document.querySelector("#hiroMarker").addEventListener("markerFound", () => {
-      if (fixedContent.getAttribute("visible") === false) {
+      if (fixedContent.getAttribute("visible") === "false" || !fixedContent.getAttribute("visible")) {
         fixedContent.setAttribute("visible", "true");
         
-        // Animation de ZOOM (Scale de 0 à 1)
+        // Animation de Zoom (0.01 à 1)
         fixedContent.setAttribute("animation", {
           property: 'scale',
-          from: '0 0 0',
           to: '1 1 1',
-          dur: 1000,
-          easing: 'easeOutElastic' // Effet rebond dynamique
+          dur: 1200,
+          easing: 'easeOutElastic'
         });
-
+        
         video.play();
         playIcon.setAttribute("value", "⏸️");
       }
     });
 
-    // 3. Fonction Toggle Play/Pause
+    // --- LOGIQUE DES BOUTONS ---
+
     function toggleVideo() {
       if (video.paused) {
         video.play();
@@ -116,14 +118,28 @@
       }
     }
 
-    // 4. Interactions (Écran + Bouton)
-    document.querySelector("#videoScreen").addEventListener('click', toggleVideo);
-    document.querySelector("#btn-play").addEventListener('click', toggleVideo);
+    // Assignation des événements
+    document.querySelector("#btn-play").addEventListener('click', (e) => {
+      console.log("Play cliqué");
+      toggleVideo();
+    });
 
-    document.querySelector("#btn-back").addEventListener('click', () => { video.currentTime -= 10; });
-    document.querySelector("#btn-forward").addEventListener('click', () => { video.currentTime += 10; });
+    document.querySelector("#videoScreen").addEventListener('click', (e) => {
+      console.log("Écran cliqué");
+      toggleVideo();
+    });
 
-    // 5. Mise à jour de la barre de progression
+    document.querySelector("#btn-back").addEventListener('click', (e) => {
+      console.log("Back cliqué");
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    });
+
+    document.querySelector("#btn-forward").addEventListener('click', (e) => {
+      console.log("Forward cliqué");
+      video.currentTime = Math.min(video.duration, video.currentTime + 10);
+    });
+
+    // Barre de progression
     video.addEventListener('timeupdate', () => {
       const progress = video.currentTime / video.duration;
       if (!isNaN(progress)) {
