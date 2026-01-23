@@ -1,231 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Experience - Ultimate</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lecteur Vidéo AR Stable - Hybride</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <style>
+    #overlay {
+      position: absolute; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
+      color: white; font-family: sans-serif; cursor: pointer; text-align: center;
+    }
+  </style>
+</head>
+
+<body style="margin:0; overflow:hidden; background:#111;">
+
+  <div id="overlay">
+    <div>
+      <h2>Système Prêt</h2>
+      <p>Cliquez pour activer la caméra,<br>puis scannez le marqueur Hiro.</p>
+    </div>
+  </div>
+
+  <a-scene embedded
+           arjs="sourceType: webcam; trackingMethod: best; detectionMode: mono_and_matrix; debugUIEnabled: false;"
+           renderer="antialias: true; logarithmicDepthBuffer: true;">
     
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <a-assets>
+      <video id="maVideo" src="V2.mp4" crossorigin="anonymous" playsinline webkit-playsinline></video>
+    </a-assets>
 
-    <style>
-      /* --- INTERFACE 2D (Overlay) --- */
-      body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    <a-marker preset="hiro" id="hiroMarker">
+        <a-box position="0 0.1 0" scale="0.2 0.2 0.2" color="#FFD700" animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"></a-box>
+    </a-marker>
+
+    <a-entity id="fixedContent" visible="false" position="0 1.6 -3">
       
-      #overlay {
-        position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9); display: flex; flex-direction: column; 
-        justify-content: center; align-items: center; color: white; text-align: center;
-        transition: opacity 0.5s ease-out;
-      }
-      
-      #start-btn {
-        padding: 15px 30px; border: 2px solid white; border-radius: 50px;
-        background: transparent; color: white; font-size: 1.2rem; font-weight: bold;
-        cursor: pointer; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px;
-      }
-      #start-btn:hover { background: white; color: black; }
+      <a-video src="#maVideo" width="2.5" height="1.4" position="0 0 0"></a-video>
 
-      #status-bar {
-        position: absolute; bottom: 30px; width: 100%; text-align: center;
-        color: #00ff00; font-weight: bold; font-size: 1.2rem; text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
-        pointer-events: none; z-index: 50; display: none;
-      }
-
-      #reset-ui {
-        position: absolute; top: 20px; right: 20px; z-index: 100; display: none;
-      }
-      #reset-btn {
-        background: rgba(255, 50, 50, 0.8); color: white; border: none; padding: 10px 20px;
-        border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      }
-    </style>
-  </head>
-
-  <body>
-
-    <div id="overlay">
-      <h1 style="margin:0;">AR PLAYER</h1>
-      <p style="color:#aaa;">Expérience Immersive</p>
-      <button id="start-btn">ENTRER DANS L'EXPÉRIENCE</button>
-    </div>
-
-    <div id="status-bar">En attente du marqueur Hiro...</div>
-
-    <div id="reset-ui">
-      <button id="reset-btn">↺ RE-SCANNER</button>
-    </div>
-
-    <a-scene 
-      embedded 
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono; maxDetectionRate: 60;"
-      renderer="logarithmicDepthBuffer: true; colorManagement: true; antialias: true;"
-      vr-mode-ui="enabled: false">
-
-      <a-assets>
-        <video id="maVideo" 
-               src="V2.mp4" 
-               preload="auto"
-               crossorigin="anonymous" 
-               playsinline 
-               webkit-playsinline 
-               loop>
-        </video>
-      </a-assets>
-
-      <a-marker preset="hiro" id="my-marker" smooth="true" smoothCount="5">
-        <a-entity id="target-guide">
-            <a-plane rotation="-90 0 0" width="2.1" height="1.2" color="#00ff00" opacity="0.2"></a-plane>
-            <a-ring rotation="-90 0 0" radius-inner="0.1" radius-outer="0.2" color="#00ff00"></a-ring>
-        </a-entity>
-      </a-marker>
-
-      <a-entity id="video-rig" visible="false" position="0 0 -1000">
-        
-        <a-video src="#maVideo" width="2" height="1.125" position="0 0.6 0"></a-video>
-        
-        <a-entity position="0 -0.2 0.1">
-          <a-box id="btn-play" class="clickable" position="0 0 0" scale="0.3 0.3 0.05" color="#4CC3D9">
-             <a-text value="PAUSE" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
-          </a-box>
-          <a-box id="btn-back" class="clickable" position="-0.5 0 0" scale="0.3 0.3 0.05" color="#FFC65D">
-            <a-text value="-5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
-          </a-box>
-          <a-box id="btn-forward" class="clickable" position="0.5 0 0" scale="0.3 0.3 0.05" color="#FFC65D">
-            <a-text value="+5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
-          </a-box>
-        </a-entity>
+      <a-entity position="0 -1 0.2">
+        <a-box id="btn-play" class="clickable" scale="0.4 0.4 0.1" color="#4CC3D9">
+          <a-text value="PLAY" align="center" position="0 0 0.6"></a-text>
+        </a-box>
+        <a-box id="btn-back" class="clickable" position="-0.6 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
+          <a-text value="-5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
+        </a-box>
+        <a-box id="btn-forward" class="clickable" position="0.6 0 0" scale="0.3 0.3 0.1" color="#FFC65D">
+          <a-text value="+5s" align="center" position="0 0 0.6" scale="0.8 0.8 0.8"></a-text>
+        </a-box>
       </a-entity>
 
-      <a-entity camera>
-        <a-cursor 
-          raycaster="objects: .clickable" 
-          color="#FFEB3B"
-          fuse="false"
-          scale="1 1 1">
-        </a-cursor>
-      </a-entity>
+    </a-entity>
 
-    </a-scene>
+    <a-entity camera look-controls wasd-controls position="0 1.6 0">
+        <a-cursor raycaster="objects: .clickable" color="white"></a-cursor>
+    </a-entity>
 
-    <script>
-      // --- VARIABLES ---
-      const overlay = document.querySelector("#overlay");
-      const startBtn = document.querySelector("#start-btn");
-      const statusBar = document.querySelector("#status-bar");
-      const resetUi = document.querySelector("#reset-ui");
-      const resetBtn = document.querySelector("#reset-btn");
-      
-      const video = document.querySelector("#maVideo");
-      const marker = document.querySelector("#my-marker");
-      const targetGuide = document.querySelector("#target-guide");
-      const videoRig = document.querySelector("#video-rig");
-      
-      const btnPlay = document.querySelector("#btn-play");
-      const btnBack = document.querySelector("#btn-back");
-      const btnForward = document.querySelector("#btn-forward");
-      const txtPlay = btnPlay.querySelector("a-text");
+  </a-scene>
 
-      let isLocked = false; 
+  <script>
+    const overlay = document.querySelector("#overlay");
+    const video = document.querySelector("#maVideo");
+    const marker = document.querySelector("#hiroMarker");
+    const fixedContent = document.querySelector("#fixedContent");
+    const btnPlay = document.querySelector("#btn-play");
+    const btnText = btnPlay.querySelector("a-text");
 
-      // --- 1. DÉBLOCAGE AUDIO/VIDÉO (CRUCIAL) ---
-      startBtn.addEventListener('click', () => {
-        // On lance la vidéo et on la coupe immédiatement
-        // Cela "déverrouille" le moteur audio du navigateur
-        video.play().then(() => {
-          video.pause();
-          video.currentTime = 0;
-          
-          // Animation de sortie de l'overlay
-          overlay.style.opacity = '0';
-          setTimeout(() => { 
-            overlay.style.display = 'none'; 
-            statusBar.style.display = 'block';
-          }, 500);
-          
-        }).catch(err => {
-          console.error("Erreur Autoplay:", err);
-          alert("Erreur: Touchez l'écran à nouveau.");
-        });
-      });
+    // 1. Activation de l'audio au clic
+    overlay.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      // Préchauffage de la vidéo pour mobile
+      video.play().then(() => { video.pause(); });
+    });
 
-      // --- 2. DÉTECTION ET ANCRAGE SPATIAL ---
-      marker.addEventListener('markerFound', () => {
-        if (isLocked) return; // Si déjà placé, on ne fait rien
+    // 2. Logique Hybride : Hiro déclenche le contenu permanent
+    marker.addEventListener("markerFound", () => {
+      if (!fixedContent.getAttribute("visible")) {
+        console.log("Marqueur Hiro détecté : Activation du contenu permanent ✅");
+        fixedContent.setAttribute("visible", "true");
+        // Optionnel : lancer la vidéo automatiquement au scan
+        video.play();
+        btnText.setAttribute('value', 'PAUSE');
+      }
+    });
 
-        statusBar.innerText = "MARQUEUR DÉTECTÉ... TENEZ IMMOBILE";
-        statusBar.style.color = "yellow";
-
-        // On attend 500ms pour être sûr que le tracking est stable
-        setTimeout(() => {
-          if (isLocked) return;
-
-          // A. Calcul de la position mondiale exacte du marqueur
-          const worldPos = new THREE.Vector3();
-          const worldQuat = new THREE.Quaternion();
-          const worldScale = new THREE.Vector3();
-
-          marker.object3D.updateMatrixWorld();
-          marker.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
-
-          // B. Transfert des coordonnées au Rig Vidéo
-          videoRig.object3D.position.copy(worldPos);
-          videoRig.object3D.quaternion.copy(worldQuat);
-          
-          // Rotation de 90° sur X pour redresser l'écran face à l'utilisateur
-          videoRig.object3D.rotateX(THREE.Math.degToRad(-90));
-
-          // C. Activation visuelle
-          videoRig.setAttribute('visible', 'true');
-          targetGuide.setAttribute('visible', 'false'); // On cache le guide vert
-
-          // D. Lancement effectif de la vidéo
-          video.play();
-          txtPlay.setAttribute('value', 'PAUSE');
-
-          // E. Verrouillage final
-          isLocked = true;
-          statusBar.innerText = "VIDÉO ANCRÉE - VOUS POUVEZ BOUGER";
-          statusBar.style.color = "#00ffff";
-          resetUi.style.display = 'block';
-
-        }, 500);
-      });
-
-      // --- 3. RESET (RE-SCANNER) ---
-      resetBtn.addEventListener('click', () => {
-        isLocked = false;
-        videoRig.setAttribute('visible', 'false');
-        targetGuide.setAttribute('visible', 'true');
+    // 3. Contrôles de la vidéo
+    btnPlay.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        btnText.setAttribute('value', 'PAUSE');
+      } else {
         video.pause();
-        
-        resetUi.style.display = 'none';
-        statusBar.innerText = "POINTEZ LE MARQUEUR HIRO";
-        statusBar.style.color = "#00ff00";
-      });
+        btnText.setAttribute('value', 'PLAY');
+      }
+    });
 
-      // --- 4. CONTRÔLES VIDÉO ---
-      btnPlay.addEventListener('click', () => {
-        if (video.paused) {
-          video.play();
-          txtPlay.setAttribute('value', 'PAUSE');
-          btnPlay.setAttribute('color', '#4CC3D9');
-        } else {
-          video.pause();
-          txtPlay.setAttribute('value', 'PLAY');
-          btnPlay.setAttribute('color', '#EF2D5E');
-        }
-      });
+    document.querySelector("#btn-back").addEventListener('click', () => {
+      video.currentTime -= 5;
+    });
 
-      btnBack.addEventListener('click', () => { video.currentTime -= 5; });
-      btnForward.addEventListener('click', () => { video.currentTime += 5; });
-
-      // Effet visuel au survol des boutons
-      document.querySelectorAll('.clickable').forEach(el => {
-        el.addEventListener('mouseenter', () => { if(isLocked) el.object3D.scale.set(0.35, 0.35, 0.05); });
-        el.addEventListener('mouseleave', () => { if(isLocked) el.object3D.scale.set(0.3, 0.3, 0.05); });
-      });
-
-    </script>
-  </body>
+    document.querySelector("#btn-forward").addEventListener('click', () => {
+      video.currentTime += 5;
+    });
+  </script>
+</body>
 </html>
